@@ -17,6 +17,7 @@ color = 0
 # grid = np.random.choice([1, 0],(num_rows, num_cols), p=[0.4, 0.6])
 grid = np.zeros((num_rows, num_cols))
 
+mode = "DRAW"
 
 def draw_grid():
     cols = screen.get_width()
@@ -36,10 +37,14 @@ def draw_rectangles(grid):
 
 def handle_click():
     global radius, color
+    if not check_mouse_bounds():
+        return
     pos = pygame.mouse.get_pos()
     yloc = pos[1] // spacing
     xloc = pos[0] // spacing
     color = (color + 1) % 360
+    if mode != "DRAW":
+        color = 0
     for x in range(-radius, radius + 1):
         for y in range(-radius, radius + 1):
             if x**2 + y**2 <= radius**2:
@@ -62,9 +67,13 @@ def update_grid(grid):
                     new_grid[row + 1, (col - direction) % num_cols] = grid[row, col]
                 else:
                     new_grid[row, col] = grid[row, col]
-                
-
     return new_grid
+
+def check_mouse_bounds():
+    pos = pygame.mouse.get_pos()
+    if pos[0] < 0 or pos[0] > screen.get_width() or pos[1] < 0 or pos[1] > screen.get_height():
+        return False
+    return True
 
 
 while running:
@@ -78,6 +87,13 @@ while running:
     mouse_buttons = pygame.mouse.get_pressed()
     if mouse_buttons[0]:  # Left mouse button is pressed
         handle_click()
+
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_SPACE]:
+        if mode == "DRAW":
+            mode = "ERASE"
+        else:
+            mode = "DRAW"
 
     # fill the screen with a color to wipe away anything from last frame
     screen.fill("black")
